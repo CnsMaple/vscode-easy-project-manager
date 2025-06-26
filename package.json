@@ -8,6 +8,10 @@
   "icon": "assets/icon.png",
   "private": true,
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CnsMaple/vscode-easy-project-manager.git"
+  },
   "categories": [
     "Other"
   ],
@@ -141,7 +145,7 @@
         },
         "easy-project-manager.alwaysShowStartPage": {
           "type": "boolean",
-          "default": true,
+          "default": false,
           "description": "Whether to always show the start page"
         }
       }
