@@ -1,0 +1,163 @@
+{
+  "publisher": "CnsMaple",
+  "name": "easy-project-manager",
+  "displayName": "Easy Project Manager",
+  "description": "Easily switch between projects",
+  "type": "module",
+  "version": "0.0.1",
+  "icon": "assets/icon.png",
+  "private": true,
+  "license": "MIT",
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "project",
+    "folder",
+    "workspace",
+    "switch",
+    "manage"
+  ],
+  "extensionKind": [
+    "ui",
+    "workspace"
+  ],
+  "main": "./dist/extension.cjs",
+  "engines": {
+    "vscode": "^1.101.0"
+  },
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "easy-project-manager.showStartPage",
+        "title": "Show Start Page",
+        "icon": "$(home)"
+      },
+      {
+        "command": "easy-project-manager.addProject",
+        "title": "Add Project",
+        "icon": "$(add)"
+      },
+      {
+        "command": "easy-project-manager.removeProject",
+        "title": "Remove Project",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "easy-project-manager.editProject",
+        "title": "Edit Project",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "easy-project-manager.quickOpenProject",
+        "title": "Search Project",
+        "icon": "$(search)"
+      },
+      {
+        "command": "easy-project-manager.quickOpenRecent",
+        "title": "Search Recent",
+        "icon": "$(search)"
+      },
+      {
+        "command": "easy-project-manager.editJson",
+        "title": "Edit",
+        "icon": "$(settings)"
+      },
+      {
+        "command": "easy-project-manager.refresh",
+        "title": "Refresh",
+        "icon": "$(refresh)"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "easyProjectManagerSidebarContainer",
+          "title": "easy-project-manager",
+          "icon": "$(file-directory)"
+        }
+      ]
+    },
+    "views": {
+      "easyProjectManagerSidebarContainer": [
+        {
+          "id": "easyProjectManagerSidebar",
+          "name": "easy-project-manager",
+          "icon": "$(file-directory)"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "easy-project-manager.addProject",
+          "when": "view == easyProjectManagerSidebar",
+          "group": "navigation@1"
+        },
+        {
+          "command": "easy-project-manager.editJson",
+          "when": "view == easyProjectManagerSidebar",
+          "group": "navigation@2"
+        },
+        {
+          "command": "easy-project-manager.refresh",
+          "when": "view == easyProjectManagerSidebar",
+          "group": "navigation@3"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "easy-project-manager.quickOpenProject",
+          "when": "view == easyProjectManagerSidebar && viewItem == project",
+          "group": "inline@0"
+        },
+        {
+          "command": "easy-project-manager.quickOpenRecent",
+          "when": "view == easyProjectManagerSidebar && viewItem == recent",
+          "group": "inline@0"
+        },
+        {
+          "command": "easy-project-manager.editProject",
+          "when": "view == easyProjectManagerSidebar && viewItem == projectItem",
+          "group": "inline@1"
+        },
+        {
+          "command": "easy-project-manager.removeProject",
+          "when": "view == easyProjectManagerSidebar && viewItem == projectItem",
+          "group": "inline@2"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Easy Project Manager",
+      "properties": {
+        "easy-project-manager.recentNum": {
+          "type": "number",
+          "default": 20,
+          "description": "The number of recent projects to show"
+        },
+        "easy-project-manager.alwaysShowStartPage": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to always show the start page"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "tsdown --env.NODE_ENV production",
+    "dev": "tsdown --watch ./src --env.NODE_ENV development",
+    "typecheck": "tsc --noEmit",
+    "vscode:prepublish": "pnpm run build"
+  },
+  "devDependencies": {
+    "@types/node": "22.x",
+    "@types/vscode": "^1.101.0",
+    "reactive-vscode": "^0.3.0",
+    "tsdown": "^0.12.8",
+    "typescript": "^5.8.3"
+  }
+}

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      body {
+        font-family: sans-serif;
+        padding: 2em;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="projects">
+      <h3
+        id="project-header"
+        style="cursor: pointer; display: flex; align-items: center; gap: 0.5em"
+      >
+        <span style="font-size: 1em; line-height: 1; vertical-align: middle"
+          >📁</span
+        ><span>Project List</span>
+      </h3>
+      <ul id="project-list">
+        <li>Loading...</li>
+      </ul>
+    </div>
+    <div id="recent">
+      <h3
+        id="recent-header"
+        style="cursor: pointer; display: flex; align-items: center; gap: 0.5em"
+      >
+        <span style="font-size: 1em; line-height: 1; vertical-align: middle"
+          >🕒</span
+        ><span>Recently Opened</span>
+      </h3>
+      <ul id="recent-list">
+        <li>Loading...</li>
+      </ul>
+    </div>
+    <script>
+      const vscode = acquireVsCodeApi();
+      function requestData() {
+        vscode.postMessage({ type: "getData" });
+      }
+      requestData();
+      setInterval(requestData, 1000);
+      // h2点击事件，调用vscode命令，只绑定一次
+      document
+        .getElementById("project-header")
+        ?.addEventListener("click", () => {
+          vscode.postMessage({
+            type: "vscode-command",
+            command: "easy-project-manager.quickOpenProject",
+          });
+        });
+      document
+        .getElementById("recent-header")
+        ?.addEventListener("click", () => {
+          vscode.postMessage({
+            type: "vscode-command",
+            command: "easy-project-manager.quickOpenRecent",
+          });
+        });
+
+      window.addEventListener("message", (event) => {
+        const msg = event.data;
+        if (msg.type === "data") {
+          const { recent, project, currentDir } = msg.data;
+          // 兼容老扩展端：如果没有 currentDir，则不高亮
+          let curDir = currentDir;
+          if (!curDir && window.vscodeCurrentDir)
+            curDir = window.vscodeCurrentDir;
+
+          const recentList = document.getElementById("recent-list");
+          recentList.innerHTML = recent.length
+            ? recent
+                .map((d) => {
+                  const isCurrent = curDir && d.dir === curDir;
+                  return `<li data-dir="${d.dir}" style="cursor:pointer;${
+                    isCurrent ? "font-weight:bold;color:#007acc;" : ""
+                  }">${isCurrent ? "➡️ " : ""}${
+                    d.label
+                  } <span style="color:#888">${d.dir}</span></li>`;
+                })
+                .join("")
+            : "<li>None</li>";
+          const projectList = document.getElementById("project-list");
+          projectList.innerHTML = project.length
+            ? project
+                .map((p) => {
+                  const isCurrent = curDir && p.dir === curDir;
+                  return `<li data-dir="${p.dir}" style="cursor:pointer;${
+                    isCurrent ? "font-weight:bold;color:#007acc;" : ""
+                  }">${isCurrent ? "➡️ " : ""}${
+                    p.label
+                  } <span style="color:#888">${p.dir}</span></li>`;
+                })
+                .join("")
+            : "<li>None</li>";
+
+          // 绑定点击事件
+          document
+            .querySelectorAll(
+              "#recent-list li[data-dir], #project-list li[data-dir]"
+            )
+            .forEach((li) => {
+              li.addEventListener("click", () => {
+                const dir = li.getAttribute("data-dir");
+                if (dir) {
+                  vscode.postMessage({ type: "openProject", dir });
+                }
+              });
+            });
+        }
+      });
+    </script>
+  </body>
+</html>
