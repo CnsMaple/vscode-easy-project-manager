@@ -68,6 +68,8 @@ export function addProject(context: ExtensionContext, project: ProjectItem) {
   } else {
     data.project.push(project);
   }
+  // 按 label 排序
+  data.project.sort((a, b) => a.label.localeCompare(b.label, "zh-Hans-CN"));
   writeProjectManagerData(context, data);
 }
 

@@ -60,59 +60,67 @@ export function registerSidebar(context: ExtensionContext) {
   }
   // 注册状态栏点击命令，弹出项目搜索
   context.subscriptions.push(
-    commands.registerCommand("easy-project-manager.quickOpenProject", async () => {
-      const data = readProjectManagerData(context);
-      const currentDir = getCurrentWorkspaceDir();
-      const items = [
-        ...data.project.map((p: any) => ({
-          label: p.dir === currentDir ? `➡️ ${p.label}` : p.label,
-          description: p.dir,
-          dir: p.dir,
-          type: "project",
-        })),
-      ];
-      if (items.length === 0) {
-        window.showInformationMessage("Project list is empty, please add a project first");
-        return;
+    commands.registerCommand(
+      "easy-project-manager.quickOpenProject",
+      async () => {
+        const data = readProjectManagerData(context);
+        const currentDir = getCurrentWorkspaceDir();
+        const items = [
+          ...data.project.map((p: any) => ({
+            label: p.dir === currentDir ? `➡️ ${p.label}` : p.label,
+            description: p.dir,
+            dir: p.dir,
+            type: "project",
+          })),
+        ];
+        if (items.length === 0) {
+          window.showInformationMessage(
+            "Project list is empty, please add a project first"
+          );
+          return;
+        }
+        const pick = await window.showQuickPick(items, {
+          placeHolder: "Search and select a project to open",
+          matchOnDescription: true,
+        });
+        if (pick && pick.dir) {
+          const vscode = require("vscode");
+          const uri = vscode.Uri.file(pick.dir);
+          await commands.executeCommand("vscode.openFolder", uri, false);
+        }
       }
-      const pick = await window.showQuickPick(items, {
-        placeHolder: "Search and select a project to open",
-        matchOnDescription: true,
-      });
-      if (pick && pick.dir) {
-        const vscode = require("vscode");
-        const uri = vscode.Uri.file(pick.dir);
-        await commands.executeCommand("vscode.openFolder", uri, false);
-      }
-    })
+    )
   );
   // 注册最近打开目录的搜索命令
   context.subscriptions.push(
-    commands.registerCommand("easy-project-manager.quickOpenRecent", async () => {
-      const data = readProjectManagerData(context);
-      const currentDir = getCurrentWorkspaceDir();
-      const items = [
-        ...data.recent.map((r: any) => ({
-          label: r.dir === currentDir ? `➡️ ${r.label}` : r.label,
-          description: r.dir,
-          dir: r.dir,
-          type: "recent",
-        })),
-      ];
-      if (items.length === 0) {
-        window.showInformationMessage("Recent list is empty");
-        return;
+    commands.registerCommand(
+      "easy-project-manager.quickOpenRecent",
+      async () => {
+        const data = readProjectManagerData(context);
+        const currentDir = getCurrentWorkspaceDir();
+        const items = [
+          ...data.recent.map((r: any) => ({
+            label: r.dir === currentDir ? `➡️ ${r.label}` : r.label,
+            description: r.dir,
+            dir: r.dir,
+            type: "recent",
+          })),
+        ];
+        if (items.length === 0) {
+          window.showInformationMessage("Recent list is empty");
+          return;
+        }
+        const pick = await window.showQuickPick(items, {
+          placeHolder: "Search and select a recent directory to open",
+          matchOnDescription: true,
+        });
+        if (pick && pick.dir) {
+          const vscode = require("vscode");
+          const uri = vscode.Uri.file(pick.dir);
+          await commands.executeCommand("vscode.openFolder", uri, false);
+        }
       }
-      const pick = await window.showQuickPick(items, {
-        placeHolder: "Search and select a recent directory to open",
-        matchOnDescription: true,
-      });
-      if (pick && pick.dir) {
-        const vscode = require("vscode");
-        const uri = vscode.Uri.file(pick.dir);
-        await commands.executeCommand("vscode.openFolder", uri, false);
-      }
-    })
+    )
   );
   updateStatusBar();
   context.subscriptions.push(statusBarItem);
@@ -239,7 +247,9 @@ export function registerSidebar(context: ExtensionContext) {
           isValid = false;
         }
         if (!isValid) {
-          window.showErrorMessage("Please enter a valid project directory path");
+          window.showErrorMessage(
+            "Please enter a valid project directory path"
+          );
           return;
         }
         // 先移除旧的，再添加新的
@@ -298,17 +308,23 @@ class ProjectManagerProvider implements TreeDataProvider<TreeItemNode> {
      * 渲染节点的信息
      */
     let label = element.label;
+    let tooltip = "";
     // 如果是项目项或最近项，且dir等于当前工作区目录，则label前加*
     if (
       (element.type === "projectItem" || element.type === "recentItem") &&
       element.dir
     ) {
+      // 设置 tooltip 为 label + dir（仅对项目项和最近项）
+      tooltip = `${element.label}\n${element.dir}`;
+      label = `${label} 👉`;
+
       const currentDir = getCurrentWorkspaceDir();
       if (currentDir && element.dir === currentDir) {
         label = `➡️ ${label}`;
       }
     }
     const item = new TreeItem(label);
+    item.tooltip = tooltip;
     if (element.type === "recent" || element.type === "project") {
       item.collapsibleState = element.collapsibleState;
       // 设置 contextValue 以便在 package.json 里配置按钮

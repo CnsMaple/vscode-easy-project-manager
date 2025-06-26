@@ -5,12 +5,68 @@
     <style>
       body {
         font-family: sans-serif;
-        padding: 2em;
+        padding: 1em 1em 1em 1em;
+      }
+      .scroll-list {
+        max-height: 20em;
+        overflow-y: auto;
+        padding-right: 0.5em;
+        position: relative;
+      }
+      .scroll-tip {
+        text-align: center;
+        color: #888;
+        font-size: 0.95em;
+        background: linear-gradient(to bottom, transparent, #fff 80%);
+        position: absolute;
+        left: 0;
+        right: 0;
+        z-index: 2;
+        pointer-events: none;
+        padding-bottom: 0.2em;
+        padding-top: 0.2em;
+      }
+      #project-scroll-tip,
+      #recent-scroll-tip {
+        bottom: 0.2em;
+        top: auto;
+      }
+      #project-scroll-tip-up,
+      #recent-scroll-tip-up {
+        top: 2.5em;
+        bottom: auto;
+        margin-top: 0.7em;
+        background: linear-gradient(to bottom, transparent, #fff 80%);
+        box-shadow: none;
+        border-radius: 0;
+        pointer-events: none;
+        cursor: default;
+        width: auto;
+        left: 0;
+        transform: none;
+        padding: 0.2em 0;
+      }
+      .list-container {
+        position: relative;
+      }
+      .scroll-list li {
+        line-height: 2em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .list-container {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px 0 #0001;
+        padding: 1em;
+        margin-bottom: 2em;
+        background: #fff;
       }
     </style>
   </head>
   <body>
-    <div id="projects">
+    <div id="projects" class="list-container">
       <h3
         id="project-header"
         style="cursor: pointer; display: flex; align-items: center; gap: 0.5em"
@@ -19,11 +75,21 @@
           >📁</span
         ><span>Project List</span>
       </h3>
-      <ul id="project-list">
+      <div
+        class="scroll-tip"
+        id="project-scroll-tip-up"
+        style="display: none; top: 2.5em; bottom: auto"
+      >
+        ↑ Back to Top
+      </div>
+      <ul id="project-list" class="scroll-list">
         <li>Loading...</li>
       </ul>
+      <div class="scroll-tip" id="project-scroll-tip" style="display: none">
+        ↓ Scroll for more
+      </div>
     </div>
-    <div id="recent">
+    <div id="recent" class="list-container">
       <h3
         id="recent-header"
         style="cursor: pointer; display: flex; align-items: center; gap: 0.5em"
@@ -32,9 +98,19 @@
           >🕒</span
         ><span>Recently Opened</span>
       </h3>
-      <ul id="recent-list">
+      <div
+        class="scroll-tip"
+        id="recent-scroll-tip-up"
+        style="display: none; top: 2.5em; bottom: auto"
+      >
+        ↑ Back to Top
+      </div>
+      <ul id="recent-list" class="scroll-list">
         <li>Loading...</li>
       </ul>
+      <div class="scroll-tip" id="recent-scroll-tip" style="display: none">
+        ↓ Scroll for more
+      </div>
     </div>
     <script>
       const vscode = acquireVsCodeApi();
@@ -75,7 +151,9 @@
             ? recent
                 .map((d) => {
                   const isCurrent = curDir && d.dir === curDir;
-                  return `<li data-dir="${d.dir}" style="cursor:pointer;${
+                  return `<li data-dir="${d.dir}" title="${d.label}\n${
+                    d.dir
+                  }" style="cursor:pointer;${
                     isCurrent ? "font-weight:bold;color:#007acc;" : ""
                   }">${isCurrent ? "➡️ " : ""}${
                     d.label
@@ -88,7 +166,9 @@
             ? project
                 .map((p) => {
                   const isCurrent = curDir && p.dir === curDir;
-                  return `<li data-dir="${p.dir}" style="cursor:pointer;${
+                  return `<li data-dir="${p.dir}" title="${p.label}\n${
+                    p.dir
+                  }" style="cursor:pointer;${
                     isCurrent ? "font-weight:bold;color:#007acc;" : ""
                   }">${isCurrent ? "➡️ " : ""}${
                     p.label
@@ -96,6 +176,56 @@
                 })
                 .join("")
             : "<li>None</li>";
+
+          // 处理滚动提示的显示与隐藏（移到ul外部）
+          function handleScrollTip(listId, tipDownId, tipUpId, show) {
+            const list = document.getElementById(listId);
+            const tipDown = document.getElementById(tipDownId);
+            const tipUp = document.getElementById(tipUpId);
+            if (tipDown) tipDown.style.display = "none";
+            if (tipUp) tipUp.style.display = "none";
+            if (!show) return;
+            function updateTip() {
+              // 向下提示：容器可滚动且未到底部时显示
+              if (tipDown) {
+                if (
+                  list.scrollHeight - list.scrollTop >
+                  list.clientHeight + 2
+                ) {
+                  tipDown.style.display = "";
+                } else {
+                  tipDown.style.display = "none";
+                }
+              }
+              // 向上提示：未到顶部时显示
+              if (tipUp) {
+                if (list.scrollTop > 2) {
+                  tipUp.style.display = "";
+                } else {
+                  tipUp.style.display = "none";
+                }
+              }
+            }
+            updateTip();
+            list.removeEventListener(
+              "scroll",
+              list._scrollTipHandler || (() => {})
+            );
+            list._scrollTipHandler = updateTip;
+            list.addEventListener("scroll", updateTip);
+          }
+          handleScrollTip(
+            "recent-list",
+            "recent-scroll-tip",
+            "recent-scroll-tip-up",
+            recent.length > 10
+          );
+          handleScrollTip(
+            "project-list",
+            "project-scroll-tip",
+            "project-scroll-tip-up",
+            project.length > 10
+          );
 
           // 绑定点击事件
           document
