@@ -14,6 +14,9 @@ import * as path from "path";
 import { alwaysShowStartPage } from "./configs";
 import { getCurrentWorkspaceDir } from "./utils";
 
+// 全局保存 start page panel
+let currentStartPagePanel: import("vscode").WebviewPanel | undefined;
+
 export = defineExtension((context: ExtensionContext) => {
   logger.info("Extension Activated");
 
@@ -31,9 +34,9 @@ export = defineExtension((context: ExtensionContext) => {
     logger.info("Workspace opened");
   }
 
-  // 侧边栏注册
+  // 侧边栏注册，传递 currentStartPagePanel 的 getter
   const { registerSidebar } = require("./sidebar");
-  registerSidebar(context);
+  registerSidebar(context, () => currentStartPagePanel);
 
   // 监听起始页webview消息
   context.subscriptions.push(
@@ -42,7 +45,9 @@ export = defineExtension((context: ExtensionContext) => {
     window.onDidChangeActiveTextEditor(() => {})
   );
 
-  useCommand("easy-project-manager.showStartPage", () => showStartPage(context));
+  useCommand("easy-project-manager.showStartPage", () =>
+    showStartPage(context)
+  );
 });
 
 function showStartPage(context: ExtensionContext) {
@@ -54,6 +59,10 @@ function showStartPage(context: ExtensionContext) {
       enableScripts: true,
     }
   );
+  currentStartPagePanel = panel;
+  panel.onDidDispose(() => {
+    if (currentStartPagePanel === panel) currentStartPagePanel = undefined;
+  });
   const iconUri = Uri.file(
     path.join(context.extensionPath, "assets", "icon.png")
   );
@@ -77,7 +86,10 @@ function showStartPage(context: ExtensionContext) {
         });
       } else if (msg.type === "openProject" && msg.dir) {
         const vscode = require("vscode");
-        vscode.commands.executeCommand("easy-project-manager.openProject", msg.dir);
+        vscode.commands.executeCommand(
+          "easy-project-manager.openProject",
+          msg.dir
+        );
       } else if (msg.type === "vscode-command" && msg.command) {
         // 新增：处理 h2 点击事件，调用命令
         const vscode = require("vscode");

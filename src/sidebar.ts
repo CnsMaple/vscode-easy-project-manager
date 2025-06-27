@@ -18,7 +18,11 @@ import {
 
 const path = require("path");
 
-export function registerSidebar(context: ExtensionContext) {
+// getStartPagePanel: () => WebviewPanel | undefined
+export function registerSidebar(
+  context: ExtensionContext,
+  getStartPagePanel?: () => any
+) {
   // 每次激活/切换工作区时，自动添加到 recent
   function addCurrentWorkspaceToRecent() {
     const currentDir = getCurrentWorkspaceDir();
@@ -206,6 +210,13 @@ export function registerSidebar(context: ExtensionContext) {
       }
       addProject(context, { label, dir });
       provider.refresh();
+      // 主动刷新 start-page.html
+      if (getStartPagePanel) {
+        const panel = getStartPagePanel();
+        if (panel && !panel._disposed) {
+          panel.webview.postMessage({ type: "refresh" });
+        }
+      }
     })
   );
 
@@ -256,6 +267,13 @@ export function registerSidebar(context: ExtensionContext) {
         removeProject(context, item.dir);
         addProject(context, { label: newLabel, dir: newDir });
         provider.refresh();
+        // 主动刷新 start-page.html
+        if (getStartPagePanel) {
+          const panel = getStartPagePanel();
+          if (panel && !panel._disposed) {
+            panel.webview.postMessage({ type: "refresh" });
+          }
+        }
       }
     )
   );

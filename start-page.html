@@ -12,6 +12,21 @@
         overflow-y: auto;
         padding-right: 0.5em;
         position: relative;
+        transition: box-shadow 0.2s, background 0.2s;
+      }
+      .scroll-list li {
+        margin: 0.3em 0;
+        border-radius: 6px;
+        padding: 0 0.8em;
+        /* 去除所有浮动相关属性 */
+        transition: background 0.18s, color 0.18s;
+        /* 不设置 border、box-shadow、transform 等 */
+      }
+      .scroll-list li:hover {
+        background: var(--vscode-list-hoverBackground, #e6fbe9);
+        color: var(--vscode-list-activeSelectionForeground, #219150);
+        /* 去除 border，避免因 border 变化导致的抖动或浮动感 */
+        cursor: pointer;
       }
       .scroll-tip {
         text-align: center;
@@ -63,9 +78,21 @@
         margin-bottom: 2em;
         background: #fff;
       }
+      .tip-box {
+        background: #f3f7fa;
+        border-left: 4px solid #007acc;
+        color: #333;
+        padding: 1em 1.5em;
+        margin-bottom: 1.5em;
+        border-radius: 4px;
+        font-size: 1em;
+      }
     </style>
   </head>
   <body>
+    <!-- <div class="tip-box">
+      ⚡ 提示：项目和最近列表如内容过多可滚动查看，仅显示部分内容。
+    </div> -->
     <div id="projects" class="list-container">
       <h3
         id="project-header"
@@ -118,7 +145,14 @@
         vscode.postMessage({ type: "getData" });
       }
       requestData();
-      setInterval(requestData, 1000);
+      // setInterval(requestData, 1000); // 移除自动刷新
+      // 监听来自 extension 的刷新消息，收到后主动请求数据
+      window.addEventListener("message", (event) => {
+        const msg = event.data;
+        if (msg.type === "refresh") {
+          requestData();
+        }
+      });
       // h2点击事件，调用vscode命令，只绑定一次
       document
         .getElementById("project-header")
