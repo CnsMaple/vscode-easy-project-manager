@@ -4,7 +4,7 @@
   "displayName": "Easy Project Manager",
   "description": "Easily switch between projects",
   "type": "module",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "icon": "assets/icon.png",
   "private": true,
   "license": "MIT",
@@ -37,42 +37,42 @@
     "commands": [
       {
         "command": "easy-project-manager.showStartPage",
-        "title": "Show Start Page",
+        "title": "Easy Project Manager: Show Start Page",
         "icon": "$(home)"
       },
       {
         "command": "easy-project-manager.addProject",
-        "title": "Add Project",
+        "title": "Easy Project Manager: Add Project",
         "icon": "$(add)"
       },
       {
         "command": "easy-project-manager.removeProject",
-        "title": "Remove Project",
+        "title": "Easy Project Manager: Remove Project",
         "icon": "$(trash)"
       },
       {
         "command": "easy-project-manager.editProject",
-        "title": "Edit Project",
+        "title": "Easy Project Manager: Edit Project",
         "icon": "$(edit)"
       },
       {
         "command": "easy-project-manager.quickOpenProject",
-        "title": "Search Project",
+        "title": "Easy Project Manager: Search Project",
         "icon": "$(search)"
       },
       {
         "command": "easy-project-manager.quickOpenRecent",
-        "title": "Search Recent",
+        "title": "Easy Project Manager: Search Recent",
         "icon": "$(search)"
       },
       {
         "command": "easy-project-manager.editJson",
-        "title": "Edit",
+        "title": "Easy Project Manager: Edit",
         "icon": "$(settings)"
       },
       {
         "command": "easy-project-manager.refresh",
-        "title": "Refresh",
+        "title": "Easy Project Manager: Refresh",
         "icon": "$(refresh)"
       }
     ],
