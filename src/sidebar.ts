@@ -173,6 +173,13 @@ export function registerSidebar(
   context.subscriptions.push(
     commands.registerCommand("easy-project-manager.refresh", () => {
       provider.refresh();
+      // 主动刷新 start-page.html
+      if (getStartPagePanel) {
+        const panel = getStartPagePanel();
+        if (panel && !panel._disposed) {
+          panel.webview.postMessage({ type: "refresh" });
+        }
+      }
     })
   );
 
@@ -227,6 +234,13 @@ export function registerSidebar(
       async (item: ProjectItem) => {
         removeProject(context, item.dir);
         provider.refresh();
+        // 主动刷新 start-page.html
+        if (getStartPagePanel) {
+          const panel = getStartPagePanel();
+          if (panel && !panel._disposed) {
+            panel.webview.postMessage({ type: "refresh" });
+          }
+        }
       }
     )
   );
