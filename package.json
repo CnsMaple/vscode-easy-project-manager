@@ -4,7 +4,7 @@
   "displayName": "Easy Project Manager",
   "description": "Easily switch between projects",
   "type": "module",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "icon": "assets/icon.png",
   "private": true,
   "license": "MIT",
