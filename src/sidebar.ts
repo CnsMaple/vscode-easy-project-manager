@@ -141,6 +141,13 @@ export function registerSidebar(
     return function (this: ProjectManagerProvider) {
       orig.call(this);
       updateStatusBar();
+      // 主动刷新 start-page.html
+      if (getStartPagePanel) {
+        const panel = getStartPagePanel();
+        if (panel && !panel._disposed) {
+          panel.webview.postMessage({ type: "refresh" });
+        }
+      }
     };
   })(provider.refresh);
 
@@ -173,13 +180,6 @@ export function registerSidebar(
   context.subscriptions.push(
     commands.registerCommand("easy-project-manager.refresh", () => {
       provider.refresh();
-      // 主动刷新 start-page.html
-      if (getStartPagePanel) {
-        const panel = getStartPagePanel();
-        if (panel && !panel._disposed) {
-          panel.webview.postMessage({ type: "refresh" });
-        }
-      }
     })
   );
 
@@ -217,13 +217,6 @@ export function registerSidebar(
       }
       addProject(context, { label, dir });
       provider.refresh();
-      // 主动刷新 start-page.html
-      if (getStartPagePanel) {
-        const panel = getStartPagePanel();
-        if (panel && !panel._disposed) {
-          panel.webview.postMessage({ type: "refresh" });
-        }
-      }
     })
   );
 
@@ -234,13 +227,6 @@ export function registerSidebar(
       async (item: ProjectItem) => {
         removeProject(context, item.dir);
         provider.refresh();
-        // 主动刷新 start-page.html
-        if (getStartPagePanel) {
-          const panel = getStartPagePanel();
-          if (panel && !panel._disposed) {
-            panel.webview.postMessage({ type: "refresh" });
-          }
-        }
       }
     )
   );
@@ -281,13 +267,6 @@ export function registerSidebar(
         removeProject(context, item.dir);
         addProject(context, { label: newLabel, dir: newDir });
         provider.refresh();
-        // 主动刷新 start-page.html
-        if (getStartPagePanel) {
-          const panel = getStartPagePanel();
-          if (panel && !panel._disposed) {
-            panel.webview.postMessage({ type: "refresh" });
-          }
-        }
       }
     )
   );
@@ -301,6 +280,68 @@ export function registerSidebar(
         const vscode = require("vscode");
         const uri = vscode.Uri.file(dir);
         await commands.executeCommand("vscode.openFolder", uri, false);
+      }
+    )
+  );
+
+  // 聚焦到当前工作区的项目（projectItem）节点并居中
+  context.subscriptions.push(
+    commands.registerCommand(
+      "easy-project-manager.revealProjectItem",
+      async () => {
+        const dir = getCurrentWorkspaceDir();
+        if (!dir) {
+          window.showWarningMessage("No current workspace directory");
+          return;
+        }
+        const data = readProjectManagerData(context);
+        const project = data.project.find((p: any) => p.dir === dir);
+        if (!project) {
+          window.showWarningMessage("Project not found");
+          return;
+        }
+        const node = new TreeItemNode(
+          project.label,
+          "projectItem",
+          0,
+          project.dir
+        );
+        await treeView.reveal(node, {
+          select: true,
+          focus: true,
+          expand: false,
+        });
+      }
+    )
+  );
+
+  // 聚焦到当前工作区的最近（recentItem）节点并居中
+  context.subscriptions.push(
+    commands.registerCommand(
+      "easy-project-manager.revealRecentItem",
+      async () => {
+        const dir = getCurrentWorkspaceDir();
+        if (!dir) {
+          window.showWarningMessage("No current workspace directory");
+          return;
+        }
+        const data = readProjectManagerData(context);
+        const recent = data.recent.find((r: any) => r.dir === dir);
+        if (!recent) {
+          window.showWarningMessage("Recent item not found");
+          return;
+        }
+        const node = new TreeItemNode(
+          recent.label,
+          "recentItem",
+          0,
+          recent.dir
+        );
+        await treeView.reveal(node, {
+          select: true,
+          focus: true,
+          expand: false,
+        });
       }
     )
   );
@@ -351,6 +392,7 @@ class ProjectManagerProvider implements TreeDataProvider<TreeItemNode> {
       label = `${label} 👉`;
 
       const currentDir = getCurrentWorkspaceDir();
+
       if (currentDir && element.dir === currentDir) {
         label = `➡️ ${label}`;
       }
@@ -384,6 +426,22 @@ class ProjectManagerProvider implements TreeDataProvider<TreeItemNode> {
 
   refresh(): void {
     this._onDidChangeTreeData.fire();
+  }
+
+  /**
+   * 支持 treeView.reveal 所需的 getParent 方法
+   */
+  getParent?(element: TreeItemNode): TreeItemNode | undefined {
+    // projectItem 的父节点是 "Project List"
+    if (element.type === "projectItem") {
+      return new TreeItemNode("Project List", "project", 2);
+    }
+    // recentItem 的父节点是 "Recently Opened"
+    if (element.type === "recentItem") {
+      return new TreeItemNode("Recently Opened", "recent", 2);
+    }
+    // 根节点无父节点
+    return undefined;
   }
 }
 

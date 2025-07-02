@@ -74,6 +74,16 @@
         "command": "easy-project-manager.refresh",
         "title": "Easy Project Manager: Refresh",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "easy-project-manager.revealProjectItem",
+        "title": "Easy Project Manager: Focus Project Item",
+        "icon": "$(target)"
+      },
+      {
+        "command": "easy-project-manager.revealRecentItem",
+        "title": "Easy Project Manager: Focus Recent Item",
+        "icon": "$(target)"
       }
     ],
     "viewsContainers": {
@@ -119,7 +129,17 @@
           "group": "inline@0"
         },
         {
+          "command": "easy-project-manager.revealProjectItem",
+          "when": "view == easyProjectManagerSidebar && viewItem == project",
+          "group": "inline@0"
+        },
+        {
           "command": "easy-project-manager.quickOpenRecent",
+          "when": "view == easyProjectManagerSidebar && viewItem == recent",
+          "group": "inline@0"
+        },
+        {
+          "command": "easy-project-manager.revealRecentItem",
           "when": "view == easyProjectManagerSidebar && viewItem == recent",
           "group": "inline@0"
         },

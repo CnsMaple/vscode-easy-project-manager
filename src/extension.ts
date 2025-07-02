@@ -3,16 +3,12 @@ import { window, ViewColumn, ExtensionContext, Uri } from "vscode";
 import {
   logger,
   readProjectManagerData,
-  addRecent,
-  addProject,
-  removeProject,
-  ProjectManagerData,
-  ProjectItem,
+  getCurrentWorkspaceDir,
 } from "./utils";
 import * as fs from "fs";
 import * as path from "path";
 import { alwaysShowStartPage } from "./configs";
-import { getCurrentWorkspaceDir } from "./utils";
+const { registerSidebar } = require("./sidebar");
 
 // 全局保存 start page panel
 let currentStartPagePanel: import("vscode").WebviewPanel | undefined;
@@ -35,15 +31,7 @@ export = defineExtension((context: ExtensionContext) => {
   }
 
   // 侧边栏注册，传递 currentStartPagePanel 的 getter
-  const { registerSidebar } = require("./sidebar");
   registerSidebar(context, () => currentStartPagePanel);
-
-  // 监听起始页webview消息
-  context.subscriptions.push(
-    // 只在 showStartPage 时注册一次
-    // 这里简化处理，实际可优化
-    window.onDidChangeActiveTextEditor(() => {})
-  );
 
   useCommand("easy-project-manager.showStartPage", () =>
     showStartPage(context)
@@ -102,7 +90,7 @@ function showStartPage(context: ExtensionContext) {
 }
 
 function getStartPageHtml(context: ExtensionContext) {
-  // 假设 start-page.html 放在插件根目录
+  // 将 start-page.html 放在插件根目录
   const htmlPath = path.join(context.extensionPath, "start-page.html");
   try {
     return fs.readFileSync(htmlPath, "utf-8");
