@@ -14,6 +14,7 @@ import {
   ProjectItem,
   getCurrentWorkspaceDir,
   addRecent,
+  dirEquals,
 } from "./utils";
 
 const path = require("path");
@@ -52,7 +53,9 @@ export function registerSidebar(
     let tooltip = "no current project";
     if (currentDir) {
       // 先查找项目
-      const project = data.project.find((p: any) => p.dir === currentDir);
+      const project = data.project.find((p: any) =>
+        dirEquals(p.dir, currentDir)
+      );
       if (project) {
         label = project.label;
       }
@@ -71,7 +74,7 @@ export function registerSidebar(
         const currentDir = getCurrentWorkspaceDir();
         const items = [
           ...data.project.map((p: any) => ({
-            label: p.dir === currentDir ? `➡️ ${p.label}` : p.label,
+            label: dirEquals(p.dir, currentDir) ? `➡️ ${p.label}` : p.label,
             description: p.dir,
             dir: p.dir,
             type: "project",
@@ -104,7 +107,7 @@ export function registerSidebar(
         const currentDir = getCurrentWorkspaceDir();
         const items = [
           ...data.recent.map((r: any) => ({
-            label: r.dir === currentDir ? `➡️ ${r.label}` : r.label,
+            label: dirEquals(r.dir, currentDir) ? `➡️ ${r.label}` : r.label,
             description: r.dir,
             dir: r.dir,
             type: "recent",
@@ -295,7 +298,7 @@ export function registerSidebar(
           return;
         }
         const data = readProjectManagerData(context);
-        const project = data.project.find((p: any) => p.dir === dir);
+        const project = data.project.find((p: any) => dirEquals(p.dir, dir));
         if (!project) {
           window.showWarningMessage("Project not found");
           return;
@@ -326,7 +329,7 @@ export function registerSidebar(
           return;
         }
         const data = readProjectManagerData(context);
-        const recent = data.recent.find((r: any) => r.dir === dir);
+        const recent = data.recent.find((r: any) => dirEquals(r.dir, dir));
         if (!recent) {
           window.showWarningMessage("Recent item not found");
           return;
@@ -393,7 +396,7 @@ class ProjectManagerProvider implements TreeDataProvider<TreeItemNode> {
 
       const currentDir = getCurrentWorkspaceDir();
 
-      if (currentDir && element.dir === currentDir) {
+      if (currentDir && dirEquals(currentDir, element.dir)) {
         label = `➡️ ${label}`;
       }
     }

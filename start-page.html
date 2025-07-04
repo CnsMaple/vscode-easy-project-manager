@@ -184,7 +184,7 @@
           recentList.innerHTML = recent.length
             ? recent
                 .map((d) => {
-                  const isCurrent = curDir && d.dir === curDir;
+                  const isCurrent = curDir && dirEquals(d.dir, curDir);
                   return `<li data-dir="${d.dir}" title="${d.label}\n${
                     d.dir
                   }" style="cursor:pointer;${
@@ -199,7 +199,7 @@
           projectList.innerHTML = project.length
             ? project
                 .map((p) => {
-                  const isCurrent = curDir && p.dir === curDir;
+                  const isCurrent = curDir && dirEquals(p.dir, curDir);
                   return `<li data-dir="${p.dir}" title="${p.label}\n${
                     p.dir
                   }" style="cursor:pointer;${
@@ -247,6 +247,10 @@
             );
             list._scrollTipHandler = updateTip;
             list.addEventListener("scroll", updateTip);
+          }
+          function dirEquals(a, b) {
+            if (!a || !b) return false;
+            return a.toLowerCase() === b.toLowerCase();
           }
           handleScrollTip(
             "recent-list",

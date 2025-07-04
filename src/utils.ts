@@ -46,7 +46,7 @@ export function writeProjectManagerData(
 
 export function addRecent(context: ExtensionContext, project: ProjectItem) {
   const data = readProjectManagerData(context);
-  const idx = data.recent.findIndex((p) => p.dir === project.dir);
+  const idx = data.recent.findIndex((p) => dirEquals(p.dir, project.dir));
   if (idx >= 0) {
     // 已存在，先移除
     data.recent.splice(idx, 1);
@@ -62,7 +62,7 @@ export function addRecent(context: ExtensionContext, project: ProjectItem) {
 
 export function addProject(context: ExtensionContext, project: ProjectItem) {
   const data = readProjectManagerData(context);
-  const idx = data.project.findIndex((p) => p.dir === project.dir);
+  const idx = data.project.findIndex((p) => dirEquals(p.dir, project.dir));
   if (idx >= 0) {
     data.project[idx] = project;
   } else {
@@ -75,7 +75,7 @@ export function addProject(context: ExtensionContext, project: ProjectItem) {
 
 export function removeProject(context: ExtensionContext, dir: string) {
   const data = readProjectManagerData(context);
-  data.project = data.project.filter((p) => p.dir !== dir);
+  data.project = data.project.filter((p) => !dirEquals(p.dir, dir));
   writeProjectManagerData(context, data);
 }
 
@@ -87,6 +87,12 @@ export function getCurrentWorkspaceDir(): string {
   const vscode = require("vscode");
   const folder = vscode.workspace.workspaceFolders?.[0];
   return folder ? folder.uri.fsPath : "";
+}
+
+// 比较目录时忽略大小写
+export function dirEquals(a: string, b: string): boolean {
+  if (!a || !b) return false;
+  return a.toLowerCase() === b.toLowerCase();
 }
 
 import { defineLogger } from "reactive-vscode";
